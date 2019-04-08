@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2012 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -300,8 +300,7 @@ CURLcode Curl_sasl_start(struct SASL *sasl, struct connectdata *conn,
         result = Curl_auth_create_gssapi_user_message(data, conn->user,
                                                       conn->passwd,
                                                       service,
-                                                      data->easy_conn->
-                                                            host.name,
+                                                      data->conn->host.name,
                                                       sasl->mutual_auth,
                                                       NULL, &conn->krb5,
                                                       &resp, &len);
@@ -358,10 +357,9 @@ CURLcode Curl_sasl_start(struct SASL *sasl, struct connectdata *conn,
       sasl->authused = SASL_MECH_XOAUTH2;
 
       if(force_ir || data->set.sasl_ir)
-        result = Curl_auth_create_oauth_bearer_message(data, conn->user,
-                                                       NULL, 0,
-                                                       conn->oauth_bearer,
-                                                       &resp, &len);
+        result = Curl_auth_create_xoauth_bearer_message(data, conn->user,
+                                                        conn->oauth_bearer,
+                                                        &resp, &len);
     }
     else if(enabledmechs & SASL_MECH_PLAIN) {
       mech = SASL_MECH_STRING_PLAIN;
@@ -517,7 +515,7 @@ CURLcode Curl_sasl_continue(struct SASL *sasl, struct connectdata *conn,
     result = Curl_auth_create_gssapi_user_message(data, conn->user,
                                                   conn->passwd,
                                                   service,
-                                                  data->easy_conn->host.name,
+                                                  data->conn->host.name,
                                                   sasl->mutual_auth, NULL,
                                                   &conn->krb5,
                                                   &resp, &len);
@@ -563,10 +561,9 @@ CURLcode Curl_sasl_continue(struct SASL *sasl, struct connectdata *conn,
       newstate = SASL_OAUTH2_RESP;
     }
     else
-      result = Curl_auth_create_oauth_bearer_message(data, conn->user,
-                                                     NULL, 0,
-                                                     conn->oauth_bearer,
-                                                     &resp, &len);
+      result = Curl_auth_create_xoauth_bearer_message(data, conn->user,
+                                                      conn->oauth_bearer,
+                                                      &resp, &len);
     break;
 
   case SASL_OAUTH2_RESP:
